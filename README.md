@@ -6,4 +6,4 @@ Generates an advertisement, provided a brand name and a specific tone
 This project is valid as of 29 May 2026.
 
 
-This version uses flask instead of FastAPI, yet to add firebase hosting integration
+This version uses flask instead of FastAPI, yet to add firebase hosting integration. Uses legacy google.generativeai

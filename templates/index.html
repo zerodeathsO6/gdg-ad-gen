@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body
+    class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col items-center justify-center p-6 relative overflow-x-hidden">
+
+    <button type="button" id="open_settings_btn"
+        class="absolute top-6 right-6 p-2 bg-white dark:bg-gray-800 border rounded-xl shadow-md text-sm">
+        Engine Config
+    </button>
+
+    <form action="/submit" method="POST" id="submit_form" class="w-full max-w-md">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Business Tagline Generator
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Business Name</label>
+                    <input type="text" name="bus_name" id="bus_name" placeholder="e.g., Cyberdyne Systems"
+                        class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tone</label>
+                    <select name="tone" id="tone"
+                        class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none">
+                        <option value="sarcastic">Sarcastic 🙄</option>
+                        <option value="witty">Witty 😏</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 mt-2">
+                    <button type="submit"
+                        class="flex-1 px-4 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md">Generate
+                        Tagline</button>
+                    <button type="button" id="reset_btn"
+                        class="px-4 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg shadow-sm">Reset</button>
+                </div>
+            </div>
+            <div id="tagline-spinner" class="flex flex-col items-center justify-center p-4 mt-2">
+                <div id="loading-spinner"
+                    class="hidden h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent">
+                </div>
+            </div>
+            <div class="mt-4 pt-6 border-t hidden" id="tagline-container">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Response from the server
+                </h3>
+                <div
+                    class="flex items-center justify-between gap-4 p-4 bg-indigo-50 dark:bg-indigo-950/40 border rounded-xl">
+                    <p id="tagline-text" class="text-lg italic text-indigo-900 dark:text-indigo-200 font-medium">""</p>
+                    <button id="copy-btn" type="button" onclick="copyTagline()"
+                        class="p-2 text-indigo-600 dark:text-indigo-400" title="Copy to clipboard">
+                        <svg id="copy-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg id="check-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden text-green-600"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="settings_drawer"
+            class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-2xl border-l transform translate-x-full transition-transform duration-300 ease-in-out z-50 p-6 flex flex-col justify-between">
+            <div class="space-y-5">
+                <div class="flex items-center justify-between pb-4 border-b">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">Engine Settings</h3>
+                    <button type="button" id="close_settings_btn"
+                        class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l18 18" />
+                        </svg>
+                    </button>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Choose Model</label>
+                    <select name="model" id="model"
+                        class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Default)</option>
+                        <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">API Key</label>
+                    <input type="password" name="api_key" id="api_key" placeholder="Your Google AIStudio key"
+                        class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Custom Instructions</label>
+                    <textarea name="custom_inst" id="custom_inst" rows="4"
+                        placeholder="e.g, Our shop is located in Khanapara"
+                        class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-none"></textarea>
+                </div>
+            </div>
+            <div class="pt-4 border-t">
+                <button type="button" id="save_drawer_btn"
+                    class="w-full px-4 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg text-center text-sm">Apply
+                    Settings</button>
+            </div>
+        </div>
+    </form>
+    <div id="drawer_overlay" class="fixed inset-0 bg-black/20 dark:bg-black/40 hidden z-40 transition-opacity"></div>
+    <script>
+        const submitForm = document.getElementById("submit_form");
+        const busNameInput = document.getElementById("bus_name");
+        const toneSelect = document.getElementById("tone");
+        const tagText = document.getElementById("tagline-text");
+        const container = document.getElementById("tagline-container");
+        const spinner = document.getElementById("loading-spinner");
+        const resetBtn = document.getElementById("reset_btn");
+        const openSettingsBtn = document.getElementById("open_settings_btn");
+        const closeSettingsBtn = document.getElementById("close_settings_btn");
+        const saveDrawerBtn = document.getElementById("save_drawer_btn");
+        const settingsDrawer = document.getElementById("settings_drawer");
+        const drawerOverlay = document.getElementById("drawer_overlay");
+        function openDrawer() { settingsDrawer.classList.remove("translate-x-full"); drawerOverlay.classList.remove("hidden"); }
+        function closeDrawer() { settingsDrawer.classList.add("translate-x-full"); drawerOverlay.classList.add("hidden"); }
+        openSettingsBtn.addEventListener("click", openDrawer);
+        closeSettingsBtn.addEventListener("click", closeDrawer);
+        saveDrawerBtn.addEventListener("click", closeDrawer);
+        drawerOverlay.addEventListener("click", closeDrawer);
+        submitForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (busNameInput.value.trim() == "") { alert("Please enter a business name"); return; }
+            else if (toneSelect.value == "") { alert("Please enter a proper tone"); return; }
+            const form = new FormData(e.target);
+            container.classList.add("hidden");
+            spinner.classList.remove("hidden");
+            try {
+                const response = await fetch("/submit", { method: "POST", body: form });
+                // console.log(response)
+                const data = await response.json();
+                // console.log(data)
+                tagText.innerText = data.text;
+                spinner.classList.add("hidden");
+                container.classList.remove("hidden");
+            } catch (error) {
+                spinner.classList.add("hidden");
+                container.classList.remove("hidden");
+                // print("We got here")
+                tagText.innerText = "Something went wrong, " + error.message;
+            }
+        });
+        resetBtn.addEventListener("click", () => {
+            busNameInput.value = "";
+            toneSelect.selectedIndex = 0;
+            spinner.classList.add("hidden");
+            container.classList.add("hidden");
+            tagText.innerText = "";
+        });
+        function copyTagline() {
+            const taglineText = tagText.innerText.replace(/^"|"$/g, '');
+            const copyIcon = document.getElementById('copy-icon');
+            const checkIcon = document.getElementById('check-icon');
+            navigator.clipboard.writeText(taglineText).then(() => {
+                copyIcon.classList.add('hidden');
+                checkIcon.classList.remove('hidden');
+                setTimeout(() => { copyIcon.classList.remove('hidden'); checkIcon.classList.add('hidden'); }, 2000);
+            }).catch(err => { console.error('Failed to copy text: ', err); });
+        }
+    </script>
+</body>
+</html>
